@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Budget Planner</title>
+    <script src="https://unpkg.com/@ionic/core@latest/dist/ionic.js"></script>
+    <link href="https://unpkg.com/@ionic/core@latest/css/ionic.bundle.css" rel="stylesheet" />
+</head>
+
+<body>
+    <ion-app>
+        <ion-header>
+
+            <ion-toolbar color="primary">
+                <ion-title>My Courses</ion-title>
+            </ion-toolbar>
+
+        </ion-header>
+        <ion-content>
+            <ion-grid>
+                <ion-row>
+                    <ion-col size-md="6" offset-md="3">
+                        <ion-card>
+                            <ion-card-content>
+                                <ion-item>
+                                    <ion-label position="floating">Course Name</ion-label>
+                                    <ion-input type="text" id="input-course-name"></ion-input>
+                                </ion-item>
+                                <ion-item>
+                                    <ion-label position="floating">Course Rating [1-5]</ion-label>
+                                    <ion-input type="number" min="1" max="5" id="input-course-rating"></ion-input>
+                                </ion-item>
+                                <div margin-vertical text-right>
+                                    <ion-button id="btn-confirm" shape="round">
+                                        <ion-icon slot="start" name="add"></ion-icon>
+                                        Add Course
+                                    </ion-button>
+                                    <ion-button shape="round" color="danger" id="btn-cancel">
+                                        <ion-icon slot="start" name="close"></ion-icon> Clear
+                                    </ion-button>
+
+                                </div>
+                            </ion-card-content>
+                        </ion-card>
+                    </ion-col>
+                </ion-row>
+                <ion-row>
+                    <ion-col size-md="6" offset-md="3">
+                        <ion-list id="my-courses-list"></ion-list>
+                    </ion-col>
+                </ion-row>
+                <ion-row>
+                    <ion-col size-md="6" offset-md="3">
+                        <p margin>Number of Courses: <span id="total-my-courses"></span></p>
+                    </ion-col>
+                </ion-row>
+            </ion-grid>
+        </ion-content>
+        <ion-alert-controller></ion-alert-controller>
+    </ion-app>
+    <script>
+        const inputCourseName = document.querySelector('#input-course-name');
+        const inputCourseRating = document.querySelector('#input-course-rating');
+        const btnCancel = document.querySelector('#btn-cancel');
+        const btnConfirm = document.querySelector('#btn-confirm');
+        const myCoursesList = document.querySelector('#my-courses-list')
+        const totalMyCoursesOutput = document.querySelector('#total-my-courses');
+
+        const alertController = document.querySelector('ion-alert-controller');
+
+        let totalOfMyCourses = 0;
+
+        const updateTotalOfMyCourses = () => {
+            totalMyCoursesOutput.textContent = `${totalOfMyCourses}`;
+        };
+
+        const resetInputs = () => {
+            inputCourseRating.value = '';
+            inputCourseName.value = '';
+        }
+
+        btnCancel.addEventListener('click', releaseEvents);
+
+        btnConfirm.addEventListener('click', () => {
+
+            const enteredCourseName = inputCourseName.value;
+            const enteredCourseRating = inputCourseRating.value;
+            let errorMessage = '';
+
+            if (enteredCourseName.trim().length <= 0) {
+                errorMessage = 'Please, provide a valid course name';
+            }
+            if (
+                !errorMessage &&
+                ((enteredCourseRating < 1 || enteredCourseRating > 5) ||
+                    enteredCourseRating.trim().length <= 0)
+            ) {
+                errorMessage = 'Please, provide a valid course rating [1-5]';
+            }
+
+            if (errorMessage) {
+
+                alertController.create({
+                    header: 'Invalid Inputs',
+                    message: errorMessage,
+                    buttons: ['OK']
+                })
+                    .then((alert) => {
+                        alert.present();
+                    });
+
+                return;
+            }
+
+            const newItem = document.createElement('ion-item');
+
+            newItem.innerHTML = `<b>${enteredCourseName}</b> : ${enteredCourseRating}/5`;
+            newItem.addEventListener('click', () => {
+
+                alertController.create(
+                    {
+                        header: 'Course removing',
+                        message: 'This action will remove this course from the list. Are you sure?',
+                        buttons: [
+                            {
+                                text: 'No',
+                                cssClass: 'danger'
+                            },
+                            {
+                                text: 'Yes',
+                                handler: () => {
+                                    myCoursesList.removeChild(newItem);
+                                    totalOfMyCourses--;
+                                    updateTotalOfMyCourses();
+                                }
+                            }
+                        ]
+                    })
+                    .then((alert) => {
+                        alert.present();
+                    });
+
+            });
+
+            myCoursesList.appendChild(newItem);
+            totalOfMyCourses++;
+            updateTotalOfMyCourses();
+            resetInputs();
+
+        });
+    </script>
+</body>
+
+</html>
